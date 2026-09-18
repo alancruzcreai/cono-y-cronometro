@@ -1,0 +1,1113 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Cronómetro visual de vertidos para café filtrado: el peso que debe marcar la báscula en cada segundo.">
+<meta name="theme-color" content="#E6E9E7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D1110" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='88'%3E%E2%98%95%3C/text%3E%3C/svg%3E">
+<style>
+:root{color-scheme:light dark;box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;padding:0}
+img{max-width:100%}
+[hidden]:not([hidden=until-found i]){display:none!important}
+</style>
+<title>Cono y Cronómetro</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500;700&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif&display=swap">
+<style>
+:root{
+  --bg:#E6E9E7; --surface:#F8F9F8; --surface-2:#EFF2F0; --surface-3:#E0E5E2;
+  --ink:#131817; --ink-2:#434E4C; --ink-3:#656E6B;
+  --line:#CDD4D1; --line-2:#B7C0BD;
+  --amber:#A25D0C; --amber-soft:#F2E3CB;
+  --petrol:#2B5867; --petrol-soft:#DCE7EB;
+  --grey:#6E7774; --ok:#2C6A4E; --ok-soft:#DCEAE2;
+  --shadow:0 1px 2px rgba(19,24,23,.05), 0 10px 26px -16px rgba(19,24,23,.30);
+  --mono:'Azeret Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans:'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --serif:'Instrument Serif', Georgia, 'Times New Roman', serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1110; --surface:#161B1A; --surface-2:#1D2322; --surface-3:#262D2B;
+    --ink:#E9EEEC; --ink-2:#A8B3B0; --ink-3:#889390;
+    --line:#282F2E; --line-2:#3A4341;
+    --amber:#E5A24D; --amber-soft:#3C2D15;
+    --petrol:#7CB4C7; --petrol-soft:#16282E;
+    --grey:#8B938F; --ok:#6DBE94; --ok-soft:#16281F;
+    --shadow:0 1px 2px rgba(0,0,0,.35), 0 10px 26px -16px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1110; --surface:#161B1A; --surface-2:#1D2322; --surface-3:#262D2B;
+  --ink:#E9EEEC; --ink-2:#A8B3B0; --ink-3:#889390;
+  --line:#282F2E; --line-2:#3A4341;
+  --amber:#E5A24D; --amber-soft:#3C2D15;
+  --petrol:#7CB4C7; --petrol-soft:#16282E;
+  --grey:#8B938F; --ok:#6DBE94; --ok-soft:#16281F;
+  --shadow:0 1px 2px rgba(0,0,0,.35), 0 10px 26px -16px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px;border-radius:4px}
+
+.app{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:0 40px;min-height:100%}
+
+/* ---------- header ---------- */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:var(--bg);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding-block:14px 10px;border-bottom:1px solid var(--line)}
+.mark{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.mark i{font-style:normal;color:var(--amber)}
+.steps{display:flex;gap:4px;align-items:center;flex:none;font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.steps b{font-weight:500;display:flex;align-items:center;gap:5px}
+.steps b::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--line-2)}
+.steps b.on{color:var(--ink)}
+.steps b.on::before{background:var(--amber)}
+.steps s{text-decoration:none;color:var(--line-2)}
+
+/* ---------- type ---------- */
+.eyebrow{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--amber);margin:22px 0 10px}
+.h1{font-size:30px;line-height:1.08;font-weight:600;letter-spacing:-.022em;margin:0 0 10px;text-wrap:balance}
+.lede{color:var(--ink-2);margin:0 0 22px;max-width:44ch}
+.panel{animation:rise .28s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---------- buttons ---------- */
+.btn{border:1px solid var(--line-2);background:var(--surface);border-radius:10px;padding:12px 16px;
+  min-height:44px;font-weight:500;font-size:14.5px;cursor:pointer;
+  transition:background .15s,border-color .15s,transform .08s}
+.btn:hover{background:var(--surface-2)}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn-primary{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600}
+.btn-primary:hover{background:var(--ink-2);border-color:var(--ink-2)}
+.btn-block{display:block;width:100%;padding-block:15px;font-size:16px}
+.btn-ghost{background:transparent}
+.btn-lg{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:20px;
+  font-size:16px;font-weight:600;background:var(--surface);box-shadow:var(--shadow)}
+.btn-lg svg{width:22px;height:22px;stroke:var(--amber);fill:none;stroke-width:1.6}
+.back{background:none;border:0;padding:12px 4px;margin-top:4px;min-height:44px;
+  font-size:13px;color:var(--ink-3);cursor:pointer;text-align:left}
+.back:hover{color:var(--ink)}
+
+/* ---------- bolsas guardadas ---------- */
+.saved{margin:20px 0 0}
+.saved h2{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-3);margin:0 0 8px}
+.saved ul{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.saved li{border-bottom:1px solid var(--line)}
+.saved button{display:flex;width:100%;align-items:center;gap:12px;background:none;border:0;
+  padding:13px 2px;min-height:56px;text-align:left;cursor:pointer;border-radius:0}
+.saved button:hover{background:var(--surface-2)}
+.saved .nm{flex:1;min-width:0}
+.saved .nm strong{display:block;font-size:15px;font-weight:600;letter-spacing:-.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.saved .nm span{display:block;font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:2px}
+.saved .go{flex:none;color:var(--ink-3);font-size:18px}
+
+/* ---------- paso 1 ---------- */
+.shoot{display:grid;gap:8px;margin-bottom:14px}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.thumb{position:relative;width:82px;height:104px;border-radius:9px;overflow:hidden;border:1px solid var(--line-2);background:var(--surface-2)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb button{position:absolute;top:5px;right:5px;width:26px;height:26px;border-radius:50%;border:0;
+  background:rgba(12,16,15,.78);color:#fff;font-size:14px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.thumb button::after{content:"";position:absolute;top:-9px;right:-9px;bottom:-9px;left:-9px}
+.ctx{display:grid;gap:10px;margin:0 0 16px;padding:14px 0 0;border-top:1px solid var(--line)}
+.field{display:grid;gap:5px}
+.field>span{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.field>span em{font-style:normal;text-transform:none;letter-spacing:0;font-weight:400}
+.field select,.field input{width:100%;padding:12px;min-height:44px;border:1px solid var(--line-2);border-radius:9px;
+  background:var(--surface);color:var(--ink);font:inherit;font-size:16px}
+.field input::placeholder{color:var(--ink-3)}
+.disc{background:none;border:0;padding:12px 0;min-height:44px;font-size:13.5px;color:var(--ink-3);
+  cursor:pointer;display:flex;align-items:center;gap:6px}
+.disc:hover{color:var(--ink)}
+.disc i{font-style:normal;font-size:10px}
+
+.reading{margin-top:14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:16px}
+.reading .st{display:flex;align-items:center;gap:10px;font-weight:500}
+.reading .dot{width:9px;height:9px;border-radius:50%;background:var(--amber);animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+.reading .meta{display:flex;justify-content:space-between;align-items:center;margin-top:6px;
+  font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.reading .meta button{background:none;border:0;color:var(--ink-3);text-decoration:underline;
+  cursor:pointer;font-size:11px;font-family:var(--mono);padding:12px 0;min-height:44px}
+.err{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--amber-soft);color:var(--ink);font-size:14px;border:1px solid var(--line)}
+
+.sep{display:flex;align-items:center;gap:12px;margin:30px 0 16px;color:var(--ink-3)}
+.sep::before,.sep::after{content:"";height:1px;background:var(--line);flex:1}
+.sep span{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase}
+.example{border:1px dashed var(--line-2);border-radius:12px;padding:16px}
+.example .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin:0 0 6px}
+.example h2{margin:0 0 6px;font-size:17px;font-weight:600;font-family:var(--mono);letter-spacing:-.01em}
+.example p{margin:0 0 12px;font-size:13.5px;color:var(--ink-2)}
+
+/* ---------- paso 2 ---------- */
+.label-read{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+.roaster{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);margin:0 0 4px}
+.cname{font-family:var(--serif);font-size:38px;line-height:1.02;margin:0 0 12px;letter-spacing:-.01em;text-wrap:balance}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip-s{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;padding:4px 9px;border-radius:99px;
+  background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
+.notes{margin:12px 0 0;font-size:13.5px;color:var(--ink-2)}
+.notes b{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:3px}
+.history{margin:12px 0 0;padding:11px 13px;border-radius:9px;background:var(--surface-2);font-size:13.5px;border:1px solid var(--line)}
+.history b{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--amber);display:block;margin-bottom:3px}
+
+.specs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);
+  border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:0}
+.spec{background:var(--surface);padding:13px 12px 14px;min-width:0}
+.spec dt{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px}
+.spec dd{margin:0;font-family:var(--mono);font-size:22px;font-weight:500;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.spec dd small{font-size:12px;font-weight:400;color:var(--ink-2)}
+.derived{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);padding:9px 2px 0;
+  font-variant-numeric:tabular-nums}
+.rows{margin:6px 0 18px}
+.row-k{display:grid;grid-template-columns:78px 1fr;gap:12px;padding:11px 2px;border-top:1px solid var(--line);align-items:baseline}
+.row-k dt{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-3);padding-top:2px}
+.row-k dd{margin:0;font-size:14.5px;overflow-wrap:anywhere}
+.row-k dd em{font-style:normal;color:var(--ink-3)}
+
+.dose{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 2px;margin-bottom:18px}
+.dose .lbl{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3)}
+.dose .sub{font-size:12.5px;color:var(--ink-3)}
+.dose .val{font-family:var(--mono);font-size:18px;font-weight:500;font-variant-numeric:tabular-nums;min-width:58px;text-align:center}
+.stepper{display:flex;align-items:center;gap:2px}
+.stepper button{width:44px;height:44px;border-radius:9px;border:1px solid var(--line-2);background:var(--surface);
+  font-size:20px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.stepper button:hover{background:var(--surface-2)}
+
+.why{border-left:2px solid var(--amber);padding:2px 0 2px 14px;margin:0 0 20px;color:var(--ink-2);font-size:14.5px;max-width:48ch}
+.plan{list-style:none;margin:0 0 20px;padding:0;border-top:1px solid var(--line)}
+.plan li{display:grid;grid-template-columns:50px 1fr auto;gap:10px;align-items:baseline;
+  padding:11px 2px;border-bottom:1px solid var(--line)}
+.plan .t{font-family:var(--mono);font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.plan .n{font-size:14px;font-weight:500}
+.plan .n em{display:block;font-style:normal;font-size:12.5px;color:var(--ink-3);font-weight:400;margin-top:1px}
+.plan .g{font-family:var(--mono);font-size:14px;font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
+.plan li.rest .n{color:var(--petrol);font-size:13px;font-weight:400}
+.plan li.rest .g{color:var(--ink-3);font-weight:400}
+.evid{font-size:12.5px;color:var(--ink-3);margin-bottom:20px}
+.evid b{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* ---------- paso 3 ---------- */
+.readout{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:14px 14px 16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.ro-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.chip{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  padding:6px 11px;border-radius:99px;background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line)}
+.chip.pour{background:var(--amber);color:var(--surface);border-color:var(--amber)}
+.chip.wait{background:var(--petrol-soft);color:var(--petrol);border-color:var(--petrol)}
+.chip.done{background:var(--ok);color:var(--surface);border-color:var(--ok)}
+.clock{font-family:var(--mono);font-size:26px;font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.ro-big{display:flex;align-items:baseline;gap:6px;line-height:.92}
+.ro-big span{font-family:var(--mono);font-size:68px;font-weight:700;letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+.ro-big i{font-style:normal;font-family:var(--mono);font-size:22px;font-weight:500;color:var(--ink-2)}
+.ro-big em{font-style:normal;font-family:var(--mono);font-size:9.5px;font-weight:500;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-3);margin-left:6px;position:relative;top:-2px}
+.ruler{position:relative;height:12px;border-radius:99px;background:var(--surface-3);margin:14px 0 24px;overflow:visible}
+.ruler-fill{position:absolute;inset:0 auto 0 0;width:0;border-radius:99px;background:var(--amber);transition:width .1s linear}
+.tick{position:absolute;top:-4px;width:1px;height:20px;background:var(--line-2)}
+.tick b{position:absolute;top:22px;left:0;transform:translateX(-50%);font-family:var(--mono);font-size:10px;
+  font-weight:500;color:var(--ink-3);white-space:nowrap;font-variant-numeric:tabular-nums}
+.tick.first b{transform:translateX(0)}
+.tick.last b{transform:translateX(-100%)}
+.ro-sub{margin:0;font-size:14px;color:var(--ink-2);min-height:21px}
+.ro-sub b{color:var(--ink);font-weight:600}
+
+.timeline{position:relative;height:clamp(290px,42vh,420px);margin-bottom:14px}
+.seg{position:absolute;left:0;right:0;display:grid;grid-template-columns:44px 14px 1fr;gap:10px;align-items:stretch}
+.seg .tm{font-family:var(--mono);font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums;padding-top:1px}
+.seg .bar{position:relative;border-radius:99px;background:var(--surface-3);overflow:hidden}
+.seg .bar i{position:absolute;inset:0 0 auto 0;height:0;display:block;background:var(--grey);transition:height .1s linear}
+.seg.pour .bar{background:var(--amber-soft)}
+.seg.pour .bar i{background:var(--amber)}
+.seg.wait .bar{background:var(--petrol-soft)}
+.seg.wait .bar i{background:var(--petrol);opacity:.55}
+.seg .mt{display:flex;flex-direction:column;justify-content:center;min-width:0;padding-right:2px}
+.seg .l1{display:flex;align-items:baseline;justify-content:space-between;gap:8px;min-width:0}
+.seg .l1 strong{font-size:14px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg .l1 b{flex:none;font-family:var(--mono);font-size:13px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.seg .l2{font-size:12px;line-height:1.25;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.seg.pour .l1 b{color:var(--amber)}
+.seg.wait .l1 strong,.seg.drain .l1 strong{font-size:13px;font-weight:500;color:var(--ink-3)}
+.seg.wait .l1 strong{color:var(--petrol)}
+.seg.past{opacity:.45}
+.seg.live .l1 strong{color:var(--amber)}
+.seg.live.wait .l1 strong{color:var(--petrol)}
+.nowline{position:absolute;left:0;right:0;top:0;height:0;z-index:5;pointer-events:none;opacity:0}
+.nowline u{position:absolute;left:54px;top:-2px;width:26px;height:3px;border-radius:2px;background:var(--amber);text-decoration:none}
+.nowline b{position:absolute;left:0;top:-9px;font-family:var(--mono);font-size:10px;font-weight:700;
+  background:var(--ink);color:var(--bg);padding:2px 5px;border-radius:4px;font-variant-numeric:tabular-nums}
+
+.controls{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:stretch}
+#btn-start{min-height:60px;font-size:18px;font-weight:700;letter-spacing:-.01em}
+#btn-reset{min-height:60px;padding-inline:18px}
+#btn-sound{min-height:60px;width:56px;padding:0;display:grid;place-items:center}
+#btn-sound svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#btn-sound[aria-pressed="false"]{color:var(--ink-3)}
+#btn-dreno{margin-top:8px;width:100%;min-height:52px;font-size:16px;font-weight:600;
+  border-color:var(--petrol);color:var(--petrol)}
+.wake{margin:10px 0 0;font-size:12px;color:var(--ink-3);display:flex;gap:7px;align-items:flex-start}
+.wake::before{content:"";flex:none;width:6px;height:6px;border-radius:50%;background:var(--amber);margin-top:6px}
+
+.after{margin-top:18px;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:16px}
+.after h3{margin:0 0 4px;font-size:16px;font-weight:600}
+.after p{margin:0 0 12px;font-size:13.5px;color:var(--ink-2)}
+.after .drain-t{font-family:var(--mono);font-size:13px;margin:0 0 12px;padding:10px 12px;border-radius:9px;
+  background:var(--surface-2);border:1px solid var(--line);font-variant-numeric:tabular-nums}
+.after .drain-t b{color:var(--ink);font-weight:700}
+.after .row{display:grid;gap:8px}
+.after .tip{margin-top:12px;padding:12px;border-radius:9px;background:var(--surface-2);font-size:13.5px;border:1px solid var(--line)}
+.after .tip b{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--amber);display:block;margin-bottom:4px}
+.after .saved-ok{margin:12px 0 0;font-family:var(--mono);font-size:11px;color:var(--ok);letter-spacing:.04em}
+
+.foot{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-3)}
+
+@media (max-width:380px){
+  .h1{font-size:26px}
+  .ro-big span{font-size:54px}
+  .specs{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .spec dd{font-size:19px}
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important;animation-iteration-count:1 !important}
+  .btn,.ruler-fill,.seg .bar i{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="bar">
+    <div class="mark">Cono <i>&amp;</i> Cronómetro</div>
+    <nav class="steps" id="steps" aria-label="Pasos">
+      <b class="on" data-s="1">Foto</b><s>·</s><b data-s="2">Receta</b><s>·</s><b data-s="3">Vertido</b>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ============ PASO 1 ============ -->
+    <section id="p-foto" class="panel">
+      <section id="saved" class="saved" hidden>
+        <h2>Bolsas que ya leí</h2>
+        <ul id="saved-list"></ul>
+      </section>
+
+      <p class="eyebrow" id="p1-eyebrow">Paso 1</p>
+      <h1 class="h1" id="p1-h1">Fotografía la bolsa.</h1>
+      <p class="lede" id="p1-lede">La etiqueta dice casi todo: origen, proceso, tueste, altura, fecha. De ahí salen el ratio, la molienda, la temperatura y el ritmo de los vertidos.</p>
+
+      <div id="hero-foto">
+      <div class="shoot">
+        <button id="btn-cam" class="btn btn-lg">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.7a1 1 0 0 0 .84-.46l.92-1.42A1 1 0 0 1 9.8 3.7h4.4a1 1 0 0 1 .84.42l.92 1.42a1 1 0 0 0 .84.46h1.7A2.5 2.5 0 0 1 21 8.5v9A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5z"/><circle cx="12" cy="13" r="3.6"/></svg>
+          <span id="cam-label">Tomar foto de la bolsa</span>
+        </button>
+        <button id="btn-gal" class="btn btn-ghost">Elegir una imagen que ya tengas</button>
+      </div>
+      <input id="cam" type="file" accept="image/*" capture="environment" hidden>
+      <input id="gal" type="file" accept="image/*" multiple hidden>
+      <div id="thumbs" class="thumbs" hidden></div>
+
+      <div id="tras-foto" hidden>
+        <button type="button" id="btn-disc" class="disc" aria-expanded="false" aria-controls="ctx">
+          <i id="disc-caret">▸</i> Método y molino <em style="font-style:normal;color:var(--line-2)">·</em> opcional
+        </button>
+        <div class="ctx" id="ctx" hidden>
+          <label class="field"><span>Método</span>
+            <select id="metodo">
+              <option value="">Que lo elija por mí</option>
+              <option>Hario V60</option>
+              <option>Kalita Wave</option>
+              <option>Chemex</option>
+              <option>Origami</option>
+              <option>Melitta / cono de una salida</option>
+              <option>Hario Switch (inmersión + filtrado)</option>
+              <option>Clever Dripper</option>
+              <option>Cafetera de goteo automática</option>
+            </select>
+          </label>
+          <label class="field"><span>Algo más que deba saber</span>
+            <input id="notas" type="text" placeholder="molino Comandante, agua filtrada, hervidor sin cuello…">
+          </label>
+        </div>
+        <button id="btn-leer" class="btn btn-primary btn-block">Leer la bolsa</button>
+      </div>
+
+      <div id="leyendo" class="reading" hidden>
+        <div class="st"><span class="dot"></span><span id="leyendo-txt">Mirando la foto</span></div>
+        <div class="meta"><span id="leyendo-t">0 s</span><button type="button" id="btn-cancel">cancelar</button></div>
+      </div>
+      <p id="foto-err" class="err" hidden></p>
+      </div>
+
+      <div class="sep" id="sep-clasicas"><span>o empieza con una clásica</span></div>
+      <section class="saved" id="presets">
+        <h2 id="presets-h">Recetas de referencia</h2>
+        <ul id="preset-list"></ul>
+      </section>
+    </section>
+
+    <!-- ============ PASO 2 ============ -->
+    <section id="p-receta" class="panel" hidden>
+      <button class="back" id="back-foto">← Volver a la foto</button>
+      <div class="label-read" id="read-head"></div>
+      <dl class="specs" id="specs"></dl>
+      <p class="derived" id="derived"></p>
+      <dl class="rows" id="rows"></dl>
+      <div class="dose">
+        <div><div class="lbl">Dosis de café</div><div class="sub">El agua se recalcula sola</div></div>
+        <div class="stepper">
+          <button type="button" id="dose-menos" aria-label="Un gramo menos de café">−</button>
+          <div class="val" id="dose-val">18 g</div>
+          <button type="button" id="dose-mas" aria-label="Un gramo más de café">+</button>
+        </div>
+      </div>
+      <p class="why" id="why"></p>
+      <ol class="plan" id="plan"></ol>
+      <div class="evid" id="evid" hidden></div>
+      <button id="btn-brew" class="btn btn-primary btn-block">Ir al cronómetro</button>
+    </section>
+
+    <!-- ============ PASO 3 ============ -->
+    <section id="p-brew" class="panel" hidden>
+      <button class="back" id="back-receta">← Volver a la receta</button>
+      <div class="readout">
+        <div class="ro-top">
+          <span class="chip" id="phase" aria-live="polite">Prepara</span>
+          <span class="clock" id="clock">0:00</span>
+        </div>
+        <div class="ro-big"><span id="target">0</span><i>g</i><em>en la báscula</em></div>
+        <div class="ruler"><div class="ruler-fill" id="ruler-fill"></div><div id="ticks"></div></div>
+        <p class="ro-sub" id="sub"></p>
+      </div>
+      <div class="timeline" id="timeline"><div class="nowline" id="nowline"><u></u><b id="nowtime">0:00</b></div></div>
+      <div class="controls">
+        <button id="btn-start" class="btn btn-primary">Empezar</button>
+        <button id="btn-reset" class="btn btn-ghost">Reiniciar</button>
+        <button id="btn-sound" class="btn" aria-pressed="true" aria-label="Silenciar los avisos">
+          <svg id="ico-sound" viewBox="0 0 24 24" aria-hidden="true"></svg>
+        </button>
+      </div>
+      <button id="btn-dreno" class="btn" hidden>Ya drenó</button>
+      <p class="wake" id="wake-warn" hidden>No puedo impedir que se apague la pantalla en esta vista. Súbele el tiempo de bloqueo del teléfono antes de empezar.</p>
+
+      <div id="after" class="after" hidden>
+        <h3>¿Cómo salió?</h3>
+        <p id="drain-t" class="drain-t" hidden></p>
+        <p>Dime a qué supo y te digo qué mover en la siguiente taza.</p>
+        <div class="row">
+          <button class="btn" id="fb-amargo">Amargo o seco</button>
+          <button class="btn" id="fb-bien">Así está bien</button>
+          <button class="btn" id="fb-acido">Ácido o aguado</button>
+        </div>
+        <div class="tip" id="fb-tip" hidden></div>
+        <p class="saved-ok" id="fb-saved" hidden>Guardado con esta bolsa.</p>
+      </div>
+      <p class="foot" id="brew-foot"></p>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s){return document.querySelector(s)};
+var clamp=function(v,a,b){return Math.max(a,Math.min(b,v))};
+var num=function(v,d){var n=parseFloat(v);return isFinite(n)?n:d};
+var fmt=function(s){s=Math.max(0,Math.round(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+var esc=function(s){var d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML};
+
+var ICO_ON='<path d="M4 9.5h3.2L12 5.5v13L7.2 14.5H4z"/><path d="M16.4 8.6a4.8 4.8 0 0 1 0 6.8"/><path d="M18.9 6a8.4 8.4 0 0 1 0 12"/>';
+var ICO_OFF='<path d="M4 9.5h3.2L12 5.5v13L7.2 14.5H4z"/><path d="m16.5 9.5 5 5"/><path d="m21.5 9.5-5 5"/>';
+
+/* ---------------- recetas de referencia ---------------- */
+var AJ_V60={amargo:'Muele más grueso o baja el agua 2 °C. Si drena en más de 3:30, el problema es la molienda, no la receta.',
+            acido:'Muele más fino, sube 2 °C y junta un poco los vertidos para que el lecho no se enfríe.'};
+function receta(nombre,metodo,dosis,agua,temp,mol,ref,mic,total,vert,porQue,aj){
+  return {clasica:true,
+    lectura:{tostador:null,nombre:nombre,origen:null,region:null,variedad:null,proceso:null,
+             tueste:null,altura:null,fechaTueste:null,notas:[],confianza:0,evidencia:''},
+    metodo:metodo,porQueMetodo:'',dosis:dosis,agua:agua,temperatura:temp,
+    molienda:{descripcion:mol,referencia:ref,micras:mic},
+    tiempoTotal:total,vertidos:vert,porQue:porQue,ajustes:aj||AJ_V60};
+}
+var PRESETS=[
+  receta('Una taza','Hario V60 01',15,250,94,'Media-fina','como sal de mesa','650–700 µm',165,[
+    {nombre:'Bloom',inicio:0,duracion:10,hasta:45,tipo:'centro',nota:'Moja todo el lecho y dale un giro corto al cono.'},
+    {nombre:'Segundo vertido',inicio:40,duracion:15,hasta:130,tipo:'espiral',nota:'Espiral del centro hacia fuera, sin tocar el papel.'},
+    {nombre:'Último vertido',inicio:70,duracion:20,hasta:250,tipo:'centro',nota:'Al centro; al final, un giro suave para aplanar el lecho.'}
+  ],'El filtrado diario de una taza. Ratio 1:16.7 a 94 °C sirve para casi cualquier tueste claro a medio.'),
+
+  receta('Hoffmann','Hario V60 02',30,500,93,'Media-fina','como sal de mesa','650–700 µm',210,[
+    {nombre:'Bloom',inicio:0,duracion:10,hasta:60,tipo:'centro',nota:'El doble del peso del café. Gira el cono para mojar todo el lecho.'},
+    {nombre:'Hasta el 60 %',inicio:45,duracion:30,hasta:300,tipo:'espiral',nota:'Chorro constante, sin prisa.'},
+    {nombre:'Hasta el 100 %',inicio:75,duracion:30,hasta:500,tipo:'espiral',nota:'Al terminar, un giro firme y deja que baje.'}
+  ],'La receta de James Hoffmann: dos vertidos grandes en vez de muchos pulsos, y un giro al final para aplanar el lecho y que drene parejo.'),
+
+  receta('4:6 de Tetsu Kasuya','Hario V60 02',20,300,92,'Gruesa','como azúcar mascabado','900–1000 µm',210,[
+    {nombre:'Primer 40 % · dulzor',inicio:0,duracion:10,hasta:50,tipo:'centro',nota:'Estos dos primeros vertidos deciden dulzor y acidez.'},
+    {nombre:'Segundo 40 %',inicio:45,duracion:10,hasta:120,tipo:'espiral',nota:'Más agua aquí = más acidez; menos = más dulce.'},
+    {nombre:'Primer 60 % · cuerpo',inicio:90,duracion:10,hasta:180,tipo:'espiral',nota:'Los tres siguientes deciden la fuerza.'},
+    {nombre:'Segundo 60 %',inicio:130,duracion:10,hasta:240,tipo:'espiral',nota:'Espera a que baje casi del todo entre vertidos.'},
+    {nombre:'Tercer 60 %',inicio:170,duracion:10,hasta:300,tipo:'espiral',nota:'Último. No toques el lecho.'}
+  ],'El método de Tetsu Kasuya, campeón mundial 2016: los dos primeros vertidos (40 % del agua) ajustan dulzor y acidez; los tres últimos (60 %) ajustan la fuerza. Molienda gruesa a propósito.',
+  {amargo:'Reparte el 60 % en más vertidos, o muele más grueso todavía.',
+   acido:'Sube el segundo vertido unos gramos y junta más los tres últimos.'}),
+
+  receta('Kalita Wave','Kalita Wave 185',22,350,94,'Media','como arena de playa','800–900 µm',195,[
+    {nombre:'Bloom',inicio:0,duracion:10,hasta:50,tipo:'centro',nota:'El fondo plano necesita que mojes hasta los bordes.'},
+    {nombre:'Segundo vertido',inicio:45,duracion:15,hasta:150,tipo:'espiral',nota:'Círculos chicos, nunca sobre el papel ondulado.'},
+    {nombre:'Tercer vertido',inicio:75,duracion:15,hasta:250,tipo:'espiral',nota:'Mantén el nivel más o menos constante.'},
+    {nombre:'Último vertido',inicio:105,duracion:15,hasta:350,tipo:'centro',nota:'Al centro y deja que termine solo.'}
+  ],'El fondo plano y los tres agujeros del Kalita perdonan más que el V60: pulsos regulares y un lecho parejo dan una taza más redonda y repetible.'),
+
+  receta('Chemex','Chemex 6 tazas',30,500,94,'Media-gruesa','como sal gruesa','900–1000 µm',270,[
+    {nombre:'Bloom',inicio:0,duracion:12,hasta:70,tipo:'centro',nota:'El filtro grueso absorbe agua: moja también el papel antes de empezar.'},
+    {nombre:'Segundo vertido',inicio:45,duracion:30,hasta:250,tipo:'espiral',nota:'Espiral amplia, el lecho es ancho.'},
+    {nombre:'Último vertido',inicio:90,duracion:40,hasta:500,tipo:'espiral',nota:'Sin prisa: este filtro drena lento por diseño.'}
+  ],'El papel del Chemex es tres veces más grueso que el de un cono normal: retiene aceites y drena lento, así que la molienda va más gruesa y el total se va a 4:30.',
+  {amargo:'Muele más grueso: con este filtro, 4:30 ya es mucho tiempo de contacto.',
+   acido:'Sube a 96 °C antes de tocar la molienda; el Chemex pierde calor rápido.'})
+];
+var EJEMPLO=PRESETS[0];
+
+/* ---------------- estado ---------------- */
+var S={sample:null,db:null,imgLimits:null,photos:[],base:null,recipe:null,segs:[],
+       t:-3,running:false,raf:0,t0:0,acc:-3,sound:true,ac:null,lastPhase:'',lastCd:null,
+       ctl:null,tmr:0,segEls:[],wl:null,drenoReal:null,fin:false,
+       bolsas:[],bolsaId:null,tazasPrev:[]};
+
+/* ---------------- normalizar receta ---------------- */
+function normaliza(r){
+  var o={};
+  o.clasica=!!r.clasica;
+  o.lectura=r.lectura&&typeof r.lectura==='object'?r.lectura:{};
+  if(!Array.isArray(o.lectura.notas))o.lectura.notas=o.lectura.notas?[String(o.lectura.notas)]:[];
+  o.metodo=r.metodo?String(r.metodo):'Cono de filtrado';
+  o.porQueMetodo=r.porQueMetodo?String(r.porQueMetodo):'';
+  o.dosis=clamp(Math.round(num(r.dosis,18)),5,120);
+  o.agua=clamp(Math.round(num(r.agua,o.dosis*16.7)),50,2000);
+  o.temperatura=clamp(Math.round(num(r.temperatura,94)),75,100);
+  var m=r.molienda&&typeof r.molienda==='object'?r.molienda:{};
+  o.molienda={descripcion:m.descripcion?String(m.descripcion):'Media',
+              referencia:m.referencia?String(m.referencia):'',
+              micras:m.micras?String(m.micras):''};
+  var v=Array.isArray(r.vertidos)?r.vertidos.slice():[];
+  v=v.map(function(p,i){
+    return {nombre:p&&p.nombre?String(p.nombre):(i===0?'Bloom':'Vertido '+(i+1)),
+            inicio:Math.max(0,num(p&&p.inicio,i*45)),
+            duracion:clamp(num(p&&p.duracion,12),3,120),
+            hasta:num(p&&p.hasta,0),
+            tipo:p&&p.tipo?String(p.tipo):'espiral',
+            nota:p&&p.nota?String(p.nota):''};
+  }).filter(function(p){return isFinite(p.inicio)});
+  if(!v.length)v=EJEMPLO.vertidos.map(function(p){return Object.assign({},p)});
+  v.sort(function(a,b){return a.inicio-b.inicio});
+  v[0].inicio=0;
+  var prevEnd=0,prevW=0;
+  for(var i=0;i<v.length;i++){
+    if(v[i].inicio<prevEnd)v[i].inicio=prevEnd+(i?5:0);
+    var h=Math.round(v[i].hasta);
+    if(!(h>prevW))h=Math.round(prevW+(o.agua-prevW)/(v.length-i));
+    v[i].hasta=Math.min(h,o.agua);
+    prevEnd=v[i].inicio+v[i].duracion;prevW=v[i].hasta;
+  }
+  v[v.length-1].hasta=o.agua;
+  o.vertidos=v;
+  var fin=v[v.length-1].inicio+v[v.length-1].duracion;
+  o.tiempoTotal=Math.round(clamp(num(r.tiempoTotal,fin+45),fin+5,900));
+  o.porQue=r.porQue?String(r.porQue):'';
+  var a=r.ajustes&&typeof r.ajustes==='object'?r.ajustes:{};
+  o.ajustes={amargo:a.amargo?String(a.amargo):EJEMPLO.ajustes.amargo,
+             acido:a.acido?String(a.acido):EJEMPLO.ajustes.acido};
+  return o;
+}
+
+function escala(base,dosis){
+  var f=dosis/base.dosis,r=JSON.parse(JSON.stringify(base));
+  r.dosis=dosis;r.agua=Math.round(base.agua*f);
+  r.vertidos=base.vertidos.map(function(p){var q=Object.assign({},p);q.hasta=Math.round(p.hasta*f);return q});
+  r.vertidos[r.vertidos.length-1].hasta=r.agua;
+  return r;
+}
+
+function segmentos(r){
+  var segs=[],prevEnd=0,prevW=0,n=r.vertidos.length;
+  r.vertidos.forEach(function(p,i){
+    if(p.inicio>prevEnd+1)segs.push({kind:'wait',t0:prevEnd,t1:p.inicio,from:prevW,to:prevW,
+      label:'Espera',nota:'Deja que baje el nivel'});
+    segs.push({kind:'pour',t0:p.inicio,t1:p.inicio+p.duracion,from:prevW,to:p.hasta,
+      label:p.nombre,nota:p.nota,tipo:p.tipo,n:i+1,de:n});
+    prevEnd=p.inicio+p.duracion;prevW=p.hasta;
+  });
+  if(r.tiempoTotal>prevEnd+1)segs.push({kind:'drain',t0:prevEnd,t1:r.tiempoTotal,from:prevW,to:prevW,
+    label:'Drenado',nota:'No toques nada'});
+  return segs;
+}
+
+function pesoEn(t){
+  if(t<=0)return 0;
+  for(var i=0;i<S.segs.length;i++){
+    var s=S.segs[i];
+    if(t<s.t0)return s.from;
+    if(t<=s.t1){
+      if(s.kind!=='pour')return s.from;
+      var p=clamp((t-s.t0)/Math.max(.001,s.t1-s.t0),0,1);
+      return s.from+(s.to-s.from)*p;
+    }
+  }
+  return S.recipe.agua;
+}
+function faseEn(t){
+  if(t<0)return{kind:'pre',i:-1,seg:null};
+  for(var i=0;i<S.segs.length;i++)if(t<S.segs[i].t1)return{kind:S.segs[i].kind,i:i,seg:S.segs[i]};
+  return{kind:'done',i:S.segs.length,seg:null};
+}
+
+/* ---------------- navegación ---------------- */
+function paso(n){
+  $('#p-foto').hidden=n!==1;$('#p-receta').hidden=n!==2;$('#p-brew').hidden=n!==3;
+  Array.prototype.forEach.call(document.querySelectorAll('#steps b'),function(b){
+    b.classList.toggle('on',+b.dataset.s===n);
+  });
+  window.scrollTo(0,0);
+}
+
+/* ---------------- paso 2: pintar receta ---------------- */
+function pintaReceta(){
+  var r=S.recipe,L=r.lectura||{};
+  var nombre=L.nombre||'Tu café';
+  var head='';
+  if(L.tostador)head+='<p class="roaster">'+esc(L.tostador)+'</p>';
+  else if(r.clasica)head+='<p class="roaster">Receta de referencia · '+esc(r.metodo)+'</p>';
+  else head+='<p class="roaster">Leído de tu foto</p>';
+  head+='<h1 class="cname">'+esc(nombre)+'</h1>';
+  var chips=[];
+  [L.origen,L.region,L.variedad,L.proceso,L.tueste,L.altura,L.fechaTueste].forEach(function(c){
+    if(c)chips.push('<span class="chip-s">'+esc(c)+'</span>');
+  });
+  if(chips.length)head+='<div class="chips">'+chips.join('')+'</div>';
+  if(L.notas&&L.notas.length)head+='<p class="notes"><b>Notas de la etiqueta</b>'+esc(L.notas.join(' · '))+'</p>';
+  var h=historial();
+  if(h)head+='<p class="history">'+h+'</p>';
+  $('#read-head').innerHTML=head;
+
+  $('#specs').innerHTML=
+    spec('Café',r.dosis+'<small> g</small>')+
+    spec('Agua',r.agua+'<small> g</small>')+
+    spec('Temp.',r.temperatura+'<small> °C</small>');
+  $('#derived').textContent='Ratio 1:'+(r.agua/r.dosis).toFixed(1)+' · '+r.vertidos.length+
+    ' vertidos · '+fmt(r.tiempoTotal)+' en total';
+
+  var mol=esc(r.molienda.descripcion)+
+    (r.molienda.referencia?' <em>— '+esc(r.molienda.referencia)+'</em>':'')+
+    (r.molienda.micras?' <em>· '+esc(r.molienda.micras)+'</em>':'');
+  $('#rows').innerHTML=
+    '<div class="row-k"><dt>Método</dt><dd>'+esc(r.metodo)+
+      (r.porQueMetodo?' <em>'+esc(r.porQueMetodo)+'</em>':'')+'</dd></div>'+
+    '<div class="row-k"><dt>Molienda</dt><dd>'+mol+'</dd></div>';
+
+  $('#dose-val').textContent=r.dosis+' g';
+
+  var why=r.porQue||'';
+  $('#why').textContent=why;
+  $('#why').hidden=!why;
+
+  var segs=segmentos(r),html='';
+  segs.forEach(function(s){
+    if(s.kind==='pour'){
+      html+='<li><span class="t">'+fmt(s.t0)+'</span><span class="n">'+esc(s.label)+
+            (s.nota?'<em>'+esc(s.nota)+'</em>':'')+'</span><span class="g">→ '+Math.round(s.to)+' g</span></li>';
+    }else{
+      html+='<li class="rest"><span class="t">'+fmt(s.t0)+'</span><span class="n">'+esc(s.label)+
+            '</span><span class="g">'+Math.round(s.t1-s.t0)+' s</span></li>';
+    }
+  });
+  $('#plan').innerHTML=html;
+
+  var ev=L.evidencia;
+  $('#evid').hidden=!ev;
+  if(ev)$('#evid').innerHTML='<b>Qué leí en la foto</b>'+esc(ev)+
+    (typeof L.confianza==='number'&&L.confianza>0?' <span style="opacity:.7">(confianza '+Math.round(L.confianza*100)+'%)</span>':'');
+}
+function spec(t,v){return '<div class="spec"><dt>'+t+'</dt><dd>'+v+'</dd></div>'}
+
+function historial(){
+  var tz=S.tazasPrev;
+  if(!tz||!tz.length)return '';
+  var ult=tz[tz.length-1],n=tz.length+1;
+  var linea='<b>'+ordinal(n)+' taza de esta bolsa</b>';
+  if(ult.sabor==='amargo')linea+='La anterior salió amarga. '+esc(S.recipe.ajustes.amargo);
+  else if(ult.sabor==='acido')linea+='La anterior salió ácida o aguada. '+esc(S.recipe.ajustes.acido);
+  else linea+='La anterior te gustó. Repite igual: '+ult.dosis+' g con '+ult.agua+' g de agua.';
+  return linea;
+}
+function ordinal(n){var m={2:'Segunda',3:'Tercera',4:'Cuarta',5:'Quinta',6:'Sexta'};return m[n]||(n+'ª')}
+
+/* ---------------- paso 3: construir la línea de tiempo ---------------- */
+function construyeBrew(){
+  var r=S.recipe;S.segs=segmentos(r);
+  var T=r.tiempoTotal,tl=$('#timeline'),now=$('#nowline');
+  Array.prototype.slice.call(tl.querySelectorAll('.seg')).forEach(function(e){e.remove()});
+  S.segEls=[];
+  S.segs.forEach(function(s){
+    var d=document.createElement('div');
+    d.className='seg '+s.kind;
+    d.style.top=(s.t0/T*100)+'%';
+    d.style.height=((s.t1-s.t0)/T*100)+'%';
+    var dur=Math.round(s.t1-s.t0);
+    var cifra=s.kind==='pour'?(Math.round(s.to)+' g'):(dur+' s');
+    var det=s.kind==='pour'?(dur+' s'+(s.nota?' · '+esc(s.nota):'')):esc(s.nota||'');
+    d.innerHTML='<span class="tm">'+fmt(s.t0)+'</span><span class="bar"><i></i></span>'+
+      '<span class="mt"><span class="l1"><strong>'+esc(s.label)+'</strong><b>'+cifra+'</b></span>'+
+      '<span class="l2">'+det+'</span></span>';
+    tl.insertBefore(d,now);
+    S.segEls.push({el:d,fill:d.querySelector('.bar i'),det:d.querySelector('.l2'),seg:s});
+  });
+
+  var tk='';
+  r.vertidos.forEach(function(p){
+    var pct=p.hasta/r.agua*100;
+    tk+='<div class="tick'+(pct>88?' last':'')+(pct<7?' first':'')+'" style="left:'+pct+'%"><b>'+Math.round(p.hasta)+'</b></div>';
+  });
+  $('#ticks').innerHTML=tk;
+  $('#brew-foot').textContent=r.metodo+' · '+r.dosis+' g de café · '+r.agua+' g de agua a '+r.temperatura+' °C · molienda '+r.molienda.descripcion.toLowerCase()+'.';
+  reset();ajustaDetalles();
+}
+// el detalle sólo se puede medir con el panel visible
+function ajustaDetalles(){
+  if($('#p-brew').hidden)return;
+  requestAnimationFrame(function(){
+    S.segEls.forEach(function(o){o.det.style.display=o.el.clientHeight<30?'none':''});
+  });
+}
+var rsz;window.addEventListener('resize',function(){clearTimeout(rsz);rsz=setTimeout(ajustaDetalles,150)});
+
+/* ---------------- pantalla encendida ---------------- */
+async function wakeOn(){
+  if(S.wl)return;
+  if(!('wakeLock' in navigator)){$('#wake-warn').hidden=false;return}
+  try{
+    S.wl=await navigator.wakeLock.request('screen');
+    S.wl.addEventListener('release',function(){S.wl=null});
+    $('#wake-warn').hidden=true;
+  }catch(e){S.wl=null;$('#wake-warn').hidden=false}
+}
+function wakeOff(){try{if(S.wl){S.wl.release();S.wl=null}}catch(e){}}
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='visible'&&S.running)wakeOn();
+});
+
+/* ---------------- reloj ---------------- */
+function reset(){
+  pausa();S.acc=-3;S.t=-3;S.lastPhase='';S.lastCd=null;S.drenoReal=null;S.fin=false;
+  $('#btn-start').textContent='Empezar';
+  $('#after').hidden=true;$('#fb-tip').hidden=true;$('#fb-saved').hidden=true;
+  $('#drain-t').hidden=true;$('#btn-dreno').hidden=true;
+  $('#nowline').style.opacity='0';
+  dibuja();
+}
+function pausa(){
+  S.running=false;if(S.raf)cancelAnimationFrame(S.raf);S.raf=0;wakeOff();
+  $('#btn-start').textContent=S.t>-3?'Seguir':'Empezar';
+  $('#btn-dreno').hidden=true;
+}
+function arranca(){
+  if(S.running)return;
+  audio();wakeOn();
+  S.running=true;S.t0=performance.now();
+  $('#btn-start').textContent='Pausa';
+  $('#nowline').style.opacity='1';
+  loop();
+}
+function loop(){
+  if(!S.running)return;
+  S.t=S.acc+(performance.now()-S.t0)/1000;
+  if(S.t>=S.recipe.tiempoTotal){S.t=S.recipe.tiempoTotal;S.acc=S.t;dibuja();termina();return;}
+  dibuja();
+  S.raf=requestAnimationFrame(loop);
+}
+function termina(){
+  pausa();S.fin=true;
+  $('#btn-start').textContent='Empezar';
+  $('#btn-dreno').hidden=true;
+  var d=$('#drain-t');
+  if(S.drenoReal!=null){
+    var dif=Math.round(S.drenoReal-S.recipe.tiempoTotal);
+    d.innerHTML='Drenó en <b>'+fmt(S.drenoReal)+'</b> · '+
+      (Math.abs(dif)<=5?'justo en lo previsto':(dif<0?Math.abs(dif)+' s antes de lo previsto':dif+' s después de lo previsto'))+
+      (dif>25?'. Eso es molienda demasiado fina.':'');
+    d.hidden=false;
+  }else d.hidden=true;
+  $('#after').hidden=false;
+}
+function toggle(){
+  if(S.running){S.acc=S.t;pausa();}
+  else{if(S.fin||S.t>=S.recipe.tiempoTotal)reset();arranca();}
+}
+
+var PH={pre:['Prepara',''],pour:['Vierte','pour'],wait:['Espera','wait'],drain:['Drena','wait'],done:['Listo','done']};
+function dibuja(){
+  var r=S.recipe,t=S.t,f=faseEn(t),w=pesoEn(t);
+  $('#clock').textContent=t<0?(S.running?'en '+Math.ceil(-t):'0:00'):fmt(t);
+  $('#target').textContent=Math.round(w);
+  $('#ruler-fill').style.width=clamp(w/r.agua*100,0,100)+'%';
+
+  var ch=$('#phase');ch.textContent=PH[f.kind][0];ch.className='chip '+PH[f.kind][1];
+
+  var sub='';
+  if(f.kind==='pre')sub='Enjuaga el filtro, tira el agua y pon la báscula en cero. <b>'+r.dosis+' g</b> de café, agua a <b>'+r.temperatura+' °C</b>.';
+  else if(f.kind==='pour')sub='Vertido <b>'+f.seg.n+' de '+f.seg.de+'</b> · sube a <b>'+Math.round(f.seg.to)+' g</b> en <b>'+Math.ceil(f.seg.t1-t)+' s</b>'+(f.seg.tipo?' · '+esc(f.seg.tipo):'');
+  else if(f.kind==='wait')sub='Siguiente vertido en <b>'+Math.ceil(f.seg.t1-t)+' s</b> · hasta '+Math.round(siguientePeso(f.i))+' g';
+  else if(f.kind==='drain')sub='Deja drenar. Previsto <b>'+fmt(r.tiempoTotal)+'</b>; marca cuando la jarra deje de gotear.';
+  else sub='Listo en <b>'+fmt(r.tiempoTotal)+'</b>. Retira el cono y dale un giro a la jarra.';
+  $('#sub').innerHTML=sub;
+
+  $('#btn-dreno').hidden=!(f.kind==='drain'&&S.running);
+
+  $('#nowline').style.top=clamp(t/r.tiempoTotal,0,1)*100+'%';
+  $('#nowtime').textContent=fmt(Math.max(0,t));
+
+  S.segEls.forEach(function(o,i){
+    var s=o.seg,p=clamp((t-s.t0)/Math.max(.001,s.t1-s.t0),0,1);
+    o.fill.style.height=(p*100)+'%';
+    o.el.classList.toggle('past',t>=s.t1);
+    o.el.classList.toggle('live',i===f.i&&t>=0);
+  });
+
+  if(t<0){var cd=Math.ceil(-t);if(cd!==S.lastCd){S.lastCd=cd;beep(660,.05,.10)}}
+  var key=f.kind+':'+f.i;
+  if(key!==S.lastPhase){
+    if(S.lastPhase&&S.running){
+      if(f.kind==='pour'){beep(880,.09,.16);setTimeout(function(){beep(1174,.09,.16)},130);}
+      else if(f.kind==='wait'||f.kind==='drain')beep(440,.10,.22);
+      else if(f.kind==='done'){beep(587,.10,.16);setTimeout(function(){beep(784,.10,.16)},150);setTimeout(function(){beep(1046,.12,.28)},300);}
+    }
+    S.lastPhase=key;
+  }
+}
+function siguientePeso(i){
+  for(var k=i;k<S.segs.length;k++)if(S.segs[k].kind==='pour')return S.segs[k].to;
+  return S.recipe.agua;
+}
+
+/* ---------------- audio ---------------- */
+function audio(){
+  if(S.ac)return;
+  try{var C=window.AudioContext||window.webkitAudioContext;if(C)S.ac=new C();}catch(e){}
+}
+function beep(hz,vol,dur){
+  if(!S.sound||!S.ac)return;
+  try{
+    if(S.ac.state==='suspended')S.ac.resume();
+    var o=S.ac.createOscillator(),g=S.ac.createGain(),n=S.ac.currentTime;
+    o.type='sine';o.frequency.value=hz;
+    g.gain.setValueAtTime(0,n);g.gain.linearRampToValueAtTime(vol,n+.012);
+    g.gain.exponentialRampToValueAtTime(.0001,n+dur);
+    o.connect(g);g.connect(S.ac.destination);o.start(n);o.stop(n+dur+.02);
+  }catch(e){}
+}
+
+/* ---------------- memoria de bolsas ---------------- */
+function pintaBolsas(){
+  var box=$('#saved'),ul=$('#saved-list');
+  if(!S.bolsas.length){box.hidden=true;return}
+  ul.innerHTML=S.bolsas.map(function(b,i){
+    var L=(b.v.receta&&b.v.receta.lectura)||{},tz=b.v.tazas||[];
+    var nombre=L.nombre||'Café sin nombre';
+    var meta=[];
+    if(L.tostador)meta.push(L.tostador);
+    meta.push(tz.length?(tz.length===1?'1 taza':tz.length+' tazas'):'sin tazas');
+    if(b.v.ultima)meta.push(hace(b.v.ultima));
+    return '<li><button type="button" data-i="'+i+'"><span class="nm"><strong>'+esc(nombre)+
+      '</strong><span>'+esc(meta.join(' · '))+'</span></span><span class="go" aria-hidden="true">→</span></button></li>';
+  }).join('');
+  box.hidden=false;
+}
+function hace(ms){
+  var d=Math.floor((Date.now()-ms)/86400000);
+  if(d<=0)return 'hoy';
+  if(d===1)return 'ayer';
+  if(d<30)return 'hace '+d+' días';
+  return 'hace '+Math.floor(d/30)+' meses';
+}
+async function cargaBolsas(){
+  if(!S.db)return;
+  try{
+    var q=await S.db.collection('bolsas').orderBy('ultima','desc').limit(12).get();
+    S.bolsas=q.docs.map(function(d){return{id:d.id,v:d.data()||{}}});
+    pintaBolsas();
+  }catch(e){}
+}
+async function guardaBolsa(){
+  if(!S.db||!S.base||S.base.clasica)return;
+  try{
+    var ref=await S.db.collection('bolsas').add({
+      receta:S.base,creado:Date.now(),ultima:Date.now(),tazas:[]
+    });
+    S.bolsaId=ref.id;
+  }catch(e){S.bolsaId=null}
+}
+async function guardaTaza(sabor){
+  if(!S.db||!S.bolsaId)return;
+  try{
+    var ref=S.db.doc('bolsas/'+S.bolsaId),snap=await ref.get();
+    if(!snap.exists)return;
+    var v=snap.data()||{},tz=Array.isArray(v.tazas)?v.tazas.slice():[];
+    tz.push({fecha:Date.now(),dosis:S.recipe.dosis,agua:S.recipe.agua,
+             drenado:S.drenoReal!=null?Math.round(S.drenoReal):null,sabor:sabor});
+    if(tz.length>12)tz=tz.slice(-12);
+    await ref.update({tazas:tz,ultima:Date.now()});
+    S.tazasPrev=tz;
+    $('#fb-saved').hidden=false;
+    cargaBolsas();
+  }catch(e){}
+}
+function abreBolsa(i){
+  var b=S.bolsas[i];if(!b)return;
+  S.base=normaliza(b.v.receta||{});S.recipe=S.base;
+  S.bolsaId=b.id;S.tazasPrev=b.v.tazas||[];
+  pintaReceta();paso(2);
+}
+
+/* ---------------- recetas de referencia ---------------- */
+function pintaPresets(){
+  $('#preset-list').innerHTML=PRESETS.map(function(r,i){
+    var meta=r.metodo+' · '+r.dosis+' g · '+r.agua+' g · '+fmt(r.tiempoTotal);
+    return '<li><button type="button" data-p="'+i+'"><span class="nm"><strong>'+esc(r.lectura.nombre)+
+      '</strong><span>'+esc(meta)+'</span></span><span class="go" aria-hidden="true">→</span></button></li>';
+  }).join('');
+}
+function abrePreset(i){
+  var r=PRESETS[i];if(!r)return;
+  S.base=normaliza(r);S.recipe=S.base;S.bolsaId=null;S.tazasPrev=[];
+  pintaReceta();paso(2);
+}
+
+/* ---------------- fotos ---------------- */
+function maxFotos(){return S.imgLimits?Math.min(S.imgLimits.maxCount,3):2}
+function addFotos(files){
+  var err=$('#foto-err'),max=maxFotos(),lim=S.imgLimits?S.imgLimits.maxInputBytes:20*1024*1024;
+  err.hidden=true;
+  Array.prototype.forEach.call(files,function(f){
+    if(S.photos.length>=max){err.textContent='Máximo '+max+' foto'+(max>1?'s':'')+'. Quita una para añadir otra.';err.hidden=false;return}
+    if(!/^image\//.test(f.type)){err.textContent='Solo puedo leer imágenes: JPG, PNG o WebP.';err.hidden=false;return}
+    if(f.size>lim){err.textContent='Esa imagen pesa demasiado. Toma otra sin tanta resolución.';err.hidden=false;return}
+    S.photos.push({file:f,url:URL.createObjectURL(f)});
+  });
+  pintaThumbs();
+}
+function pintaThumbs(){
+  var c=$('#thumbs');
+  c.hidden=!S.photos.length;
+  c.innerHTML=S.photos.map(function(p,i){
+    return '<div class="thumb"><img src="'+p.url+'" alt="Foto '+(i+1)+' de la bolsa"><button type="button" data-i="'+i+'" aria-label="Quitar la foto '+(i+1)+'">×</button></div>';
+  }).join('');
+  $('#tras-foto').hidden=!S.photos.length||!S.sample;
+}
+
+/* ---------------- lectura con Claude ---------------- */
+var FORMA='{"esCafe":true,"lectura":{"tostador":null,"nombre":null,"origen":null,"region":null,"variedad":null,"proceso":null,"tueste":null,"altura":null,"fechaTueste":null,"notas":[],"confianza":0.8,"evidencia":""},"metodo":"Hario V60 02","porQueMetodo":"","dosis":18,"agua":300,"temperatura":94,"molienda":{"descripcion":"Media-fina","referencia":"como sal de mesa","micras":"650–700 µm"},"tiempoTotal":180,"vertidos":[{"nombre":"Bloom","inicio":0,"duracion":12,"hasta":54,"tipo":"centro","nota":""}],"porQue":"","ajustes":{"amargo":"","acido":""}}';
+
+function prompt_(){
+  var m=$('#metodo').value,n=$('#notas').value.trim();
+  return [
+'Eres barista de café filtrado. Te paso '+(S.photos.length>1?'varias fotos':'una foto')+': normalmente la bolsa de café. A veces también el equipo o la molienda.',
+'',
+'1) LEE la foto. Saca lo que realmente se ve: tostador, nombre del café, origen, región o finca, variedad, proceso, nivel de tueste, altura, fecha de tueste, notas de cata. Lo que no se vea, déjalo en null; no inventes. En "evidencia" escribe en una frase qué texto o señal de la foto usaste, y en "confianza" un número de 0 a 1.',
+'2) ARMA una receta de filtrado concreta y ejecutable para ESE café.',
+'',
+'Contexto de la persona:',
+'- Método: '+(m||'no lo indicó, elígelo tú'),
+'- Notas: '+(n||'ninguna'),
+'',
+'Reglas de la receta:',
+'- Si indicó método, úsalo. Si no, elige el que mejor le quede y explícalo en "porQueMetodo".',
+'- Ratio entre 1:15 y 1:17 salvo razón explícita. Dosis en gramos de café, agua en gramos.',
+'- Temperatura en °C entre 88 y 96: tueste claro y denso más caliente, tueste oscuro más frío.',
+'- "molienda.descripcion" en dos o tres palabras, "referencia" una comparación física cotidiana, "micras" un rango.',
+'- Entre 3 y 6 vertidos contando el bloom. El bloom usa entre 2 y 3 veces el peso del café.',
+'- Cada vertido: "inicio" = segundo en que empiezas a verter, "duracion" = segundos que dura ese vertido, "hasta" = peso ACUMULADO en la báscula al terminarlo. Los "hasta" deben crecer y el último debe ser exactamente el agua total.',
+'- Deja pausas reales entre el fin de un vertido y el inicio del siguiente.',
+'- "tiempoTotal" en segundos, incluye el drenado final.',
+'- "porQue": 2 o 3 frases atando lo que leíste en la etiqueta con la temperatura, la molienda y el ritmo de vertidos.',
+'- "ajustes": qué mover si sale amargo y qué mover si sale ácido o aguado. Frases de una línea, imperativas.',
+'- Todo en español, unidades métricas, tono directo, sin adjetivos de catálogo.',
+'',
+'Si la foto no tiene nada que ver con café, responde solo {"esCafe":false,"motivo":"..."}.',
+'',
+'Responde SOLO con un objeto JSON con exactamente esta forma:',
+FORMA
+].join('\n');
+}
+
+var HITOS=[['"lectura"','Leyendo la etiqueta'],['"metodo"','Eligiendo el método'],['"molienda"','Fijando molienda y temperatura'],
+           ['"vertidos"','Trazando los vertidos'],['"porQue"','Escribiendo el porqué'],['"ajustes"','Cerrando los ajustes']];
+
+var COPY={
+  not_granted:'Para leer la foto necesito permiso de usar Claude en esta página. Recarga y acepta cuando te lo pida.',
+  sampling_disabled:'Tu cuenta no puede usar Claude desde una página publicada. Abre el ejemplo de abajo y ajusta la dosis a mano.',
+  images_unavailable:'Esta vista no envía imágenes. Ábrela en la app de Claude, o abre el ejemplo de abajo.',
+  image_rejected:'No pude leer esa imagen. Acércate más a la etiqueta y vuelve a intentarlo.',
+  rate_limited:'Vas más rápido de lo que el servicio aguanta. Espera un minuto y vuelve a intentarlo.',
+  session_expired:'Se cerró tu sesión. Vuelve a entrar y repite la foto.',
+  refused:'Claude no pudo trabajar con esa foto. Prueba con una de la etiqueta de la bolsa.',
+  invalid_json:'La respuesta llegó incompleta. Vuelve a intentarlo.',
+  empty_completion:'No llegó respuesta. Prueba con una foto más nítida de la etiqueta.',
+  cancelled:'',
+  upstream_error:'Se cortó la conexión. Vuelve a intentarlo.'
+};
+
+async function leer(){
+  if(!S.sample)return;
+  var err=$('#foto-err'),box=$('#leyendo'),txt=$('#leyendo-txt'),tt=$('#leyendo-t');
+  err.hidden=true;box.hidden=false;$('#btn-leer').disabled=true;
+  txt.textContent='Mirando la foto';
+  var t0=Date.now();
+  S.tmr=setInterval(function(){tt.textContent=Math.round((Date.now()-t0)/1000)+' s'},250);
+  S.ctl=new AbortController();
+  try{
+    var data=await S.sample.json(prompt_(),{
+      images:S.photos.map(function(p){return p.file}),
+      modelTier:'complex',
+      signal:S.ctl.signal,
+      onText:function(u){
+        for(var i=HITOS.length-1;i>=0;i--)if(u.text.indexOf(HITOS[i][0])>=0){txt.textContent=HITOS[i][1];break}
+      }
+    });
+    if(data&&data.esCafe===false){
+      err.textContent='En esa foto no veo café'+(data.motivo?': '+data.motivo:'')+'. Prueba con la etiqueta de la bolsa.';
+      err.hidden=false;
+    }else{
+      S.base=normaliza(data||{});
+      S.recipe=S.base;S.tazasPrev=[];S.bolsaId=null;
+      pintaReceta();paso(2);
+      guardaBolsa();
+    }
+  }catch(e){
+    var msg=COPY[e&&e.code]||'No se pudo leer la foto. Vuelve a intentarlo.';
+    if(msg){err.textContent=msg;err.hidden=false}
+  }finally{
+    clearInterval(S.tmr);box.hidden=true;$('#btn-leer').disabled=false;S.ctl=null;
+  }
+}
+
+/* ---------------- eventos ---------------- */
+$('#btn-cam').addEventListener('click',function(){$('#cam').click()});
+$('#btn-gal').addEventListener('click',function(){$('#gal').click()});
+$('#cam').addEventListener('change',function(e){addFotos(e.target.files);e.target.value=''});
+$('#gal').addEventListener('change',function(e){addFotos(e.target.files);e.target.value=''});
+$('#thumbs').addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b)return;
+  var i=+b.dataset.i;try{URL.revokeObjectURL(S.photos[i].url)}catch(err){}
+  S.photos.splice(i,1);pintaThumbs();
+});
+$('#btn-disc').addEventListener('click',function(){
+  var c=$('#ctx'),abierto=c.hidden;
+  c.hidden=!abierto;this.setAttribute('aria-expanded',String(abierto));
+  $('#disc-caret').textContent=abierto?'▾':'▸';
+});
+$('#btn-leer').addEventListener('click',leer);
+$('#btn-cancel').addEventListener('click',function(){if(S.ctl)S.ctl.abort()});
+$('#preset-list').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-p]');if(b)abrePreset(+b.dataset.p);
+});
+$('#saved-list').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-i]');if(b)abreBolsa(+b.dataset.i);
+});
+$('#back-foto').addEventListener('click',function(){paso(1)});
+$('#back-receta').addEventListener('click',function(){pausa();paso(2)});
+$('#btn-brew').addEventListener('click',function(){paso(3);construyeBrew()});
+$('#dose-menos').addEventListener('click',function(){cambiaDosis(-1)});
+$('#dose-mas').addEventListener('click',function(){cambiaDosis(1)});
+function cambiaDosis(d){
+  if(!S.base)return;
+  S.recipe=escala(S.base,clamp(S.recipe.dosis+d,8,60));
+  pintaReceta();
+}
+$('#btn-start').addEventListener('click',toggle);
+$('#btn-reset').addEventListener('click',reset);
+$('#btn-dreno').addEventListener('click',function(){S.drenoReal=S.t;S.acc=S.t;termina()});
+$('#btn-sound').addEventListener('click',function(){
+  S.sound=!S.sound;
+  this.setAttribute('aria-pressed',String(S.sound));
+  this.setAttribute('aria-label',S.sound?'Silenciar los avisos':'Activar los avisos');
+  $('#ico-sound').innerHTML=S.sound?ICO_ON:ICO_OFF;
+  audio();if(S.sound)beep(880,.08,.12);
+});
+$('#fb-amargo').addEventListener('click',function(){
+  tip('Salió amargo o seco',S.recipe.ajustes.amargo);guardaTaza('amargo');
+});
+$('#fb-acido').addEventListener('click',function(){
+  tip('Salió ácido o aguado',S.recipe.ajustes.acido);guardaTaza('acido');
+});
+$('#fb-bien').addEventListener('click',function(){
+  tip('Quedó bien','No muevas nada: '+S.recipe.dosis+' g con '+S.recipe.agua+' g a '+S.recipe.temperatura+' °C, molienda '+S.recipe.molienda.descripcion.toLowerCase()+'.');
+  guardaTaza('bien');
+});
+function tip(t,txt){var e=$('#fb-tip');e.innerHTML='<b>'+esc(t)+'</b>'+esc(txt);e.hidden=false}
+document.addEventListener('keydown',function(e){
+  if($('#p-brew').hidden)return;
+  if(e.target.matches('input,select,textarea'))return;
+  if(e.code==='Space'){e.preventDefault();toggle()}
+  if(e.key==='r'||e.key==='R')reset();
+});
+
+/* ---------------- arranque ---------------- */
+$('#ico-sound').innerHTML=ICO_ON;
+S.base=normaliza(EJEMPLO);S.recipe=S.base;
+pintaPresets();pintaReceta();construyeBrew();paso(1);
+if(!window.matchMedia||!window.matchMedia('(pointer: coarse)').matches){
+  $('#cam-label').textContent='Subir foto de la bolsa';
+}
+
+(async function(){
+  try{
+    var c=window.claude&&window.claude.use?await window.claude.use('sample'):null;
+    if(!c){modoLocal('Esta copia no lee etiquetas: la foto la interpreta Claude, y eso solo corre dentro de Claude. El cronómetro funciona completo — elige una receta y ajusta la dosis a tu cono.');return}
+    S.sample=c;
+    var lim=await c.limits().catch(function(){return null});
+    if(!lim||!lim.images){modoLocal('Esta vista no puede enviar imágenes a Claude, así que no puedo leer la etiqueta. Elige una receta de referencia y ajusta la dosis.');return}
+    S.imgLimits=lim.images;
+    $('#cam').accept=lim.images.mediaTypes.join(',');
+    $('#gal').accept=lim.images.mediaTypes.join(',');
+    pintaThumbs();
+  }catch(e){modoLocal('No se pudo conectar con Claude para leer la etiqueta. Elige una receta de referencia y ajusta la dosis.')}
+})();
+
+(async function(){
+  try{
+    var d=window.claude&&window.claude.use?await window.claude.use('db'):null;
+    if(!d)return;
+    S.db=d;cargaBolsas();
+  }catch(e){}
+})();
+
+// sin lectura de etiqueta: el cronómetro sigue completo con las recetas de referencia
+function modoLocal(razon){
+  $('#hero-foto').hidden=true;
+  $('#sep-clasicas').hidden=true;
+  $('#p1-eyebrow').textContent='Cronómetro';
+  $('#p1-h1').textContent='Elige una receta.';
+  $('#p1-lede').textContent=razon;
+  $('#presets-h').textContent='Recetas de referencia';
+  document.querySelector('#steps b[data-s="1"]').textContent='Elegir';
+}
+})();
+</script>
+</body>
+</html>
