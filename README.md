@@ -25,6 +25,14 @@ Una página, sin dependencias ni build. Abre `index.html` y ya.
 - **Cinco recetas de referencia**: una taza (V60), Hoffmann, 4:6 de Tetsu
   Kasuya, Kalita Wave y Chemex, cada una con su porqué y sus correcciones.
 
+## Temas
+
+Claro y oscuro, incluida la pantalla de vertido, que es la que más rato miras.
+Todos los colores salen de tokens redefinidos en los tres estados que existe
+de verdad: `:root` (claro), `@media (prefers-color-scheme: dark)` protegido con
+`:root:not([data-theme="light"])`, y `:root[data-theme="dark"]` para que un
+cambio manual gane en los dos sentidos.
+
 ## Tipografía
 
 Fuentes del sistema, cero descargas: `ui-serif` para los títulos (New York en
