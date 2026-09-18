@@ -28,10 +28,16 @@ Una página, sin dependencias ni build. Abre `index.html` y ya.
 ## Temas
 
 Claro y oscuro, incluida la pantalla de vertido, que es la que más rato miras.
-Todos los colores salen de tokens redefinidos en los tres estados que existe
+Todos los colores salen de tokens redefinidos en los tres estados que existen
 de verdad: `:root` (claro), `@media (prefers-color-scheme: dark)` protegido con
 `:root:not([data-theme="light"])`, y `:root[data-theme="dark"]` para que un
 cambio manual gane en los dos sentidos.
+
+El botón de la barra cicla **automático → claro → oscuro** y recuerda la
+elección. «Automático» no es un tercer tema: es no estampar nada y dejar que
+mande el sistema, así que si cambias el teléfono a oscuro de noche la app lo
+sigue sin tocar nada. La elección se aplica en un script del `<head>`, antes de
+pintar, para que no parpadee el tema equivocado al cargar.
 
 ## Tipografía
 
