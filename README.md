@@ -26,6 +26,7 @@ Una página, sin dependencias ni build. Abre `index.html` y ya.
   Kasuya, Kalita Wave y Chemex, cada una con su porqué y sus correcciones.
 - **Compartir**: manda la receta como texto legible más un enlace que la
   reconstruye entera en el cronómetro del que lo recibe.
+- **PDF**: una ficha de una página para guardar o pegar en la pared.
 
 ## Compartir
 
@@ -47,6 +48,19 @@ JSON viaja sin comprimir y el enlace solo queda más largo. Se comparte con
 `navigator.share` y, si el navegador no lo trae, cae al portapapeles y, si
 tampoco, a un cuadro de texto ya seleccionado. El botón nunca se queda sin
 hacer nada.
+
+## PDF
+
+El botón arma una ficha de una página —nombre, parámetros, tabla de vertidos
+con sus notas, el porqué y qué mover si no sale bien— y abre el diálogo de
+impresión, donde «Guardar como PDF» es una de las salidas.
+
+No lleva ninguna librería de PDF. La ficha es HTML con su propio `@media
+print`, así que la dibuja el motor del navegador: sale con la tipografía real,
+en vectores, y el texto sigue siendo texto seleccionable. Una librería habría
+pesado 350 KB para producir algo peor, y además los descargas por script están
+bloqueados dentro de un visor incrustado, con lo que el botón no haría nada
+allí.
 
 ## Temas
 

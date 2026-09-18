@@ -208,12 +208,9 @@ button{font:inherit;color:inherit}
 .plan li.rest .g{color:var(--ink-3);font-weight:400}
 .evid{font-size:13.5px;color:var(--ink-3);margin-bottom:22px}
 .evid b{font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;font-weight:600}
-.acciones{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:stretch}
-.acciones .btn{display:flex;align-items:center;justify-content:center;gap:8px;padding-block:16px;font-size:17px}
+.acciones{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch;margin-bottom:8px}
+.acciones .btn{display:flex;align-items:center;justify-content:center;gap:8px;padding-block:14px;font-size:16px}
 .acciones svg{width:19px;height:19px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-/* en pantallas muy angostas el secundario se queda en icono para que el
-   primario nunca sea el más estrecho de los dos */
-@media (max-width:380px){.acciones .lbl{display:none}}
 .share-msg{margin:10px 0 0;font-size:14px;color:var(--ok);text-align:center}
 .share-txt{width:100%;margin-top:10px;min-height:150px;padding:12px;border:1px solid var(--line-2);
   border-radius:12px;background:var(--surface);color:var(--ink);font:inherit;font-size:14px;resize:vertical}
@@ -327,6 +324,37 @@ button{font:inherit;color:inherit}
   *{animation-duration:.001ms !important;animation-iteration-count:1 !important}
   .btn,.play,.segs i b,.c-bar b{transition:none}
 }
+
+/* ---------- ficha impresa / PDF ---------- */
+#print-card{display:none}
+@media print{
+  @page{margin:16mm}
+  html,body{height:auto;background:#fff}
+  .app,.brew{display:none !important}
+  #print-card{display:block;color:#111;font-family:var(--sans);font-size:11pt;line-height:1.45}
+  #print-card *{color:#111 !important;background:transparent !important}
+  #print-card h1{font-family:var(--serif);font-size:30pt;font-weight:400;line-height:1.05;
+    margin:0 0 4pt;letter-spacing:-.01em}
+  #print-card .pc-sub{margin:0 0 2pt;font-size:10pt;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+  #print-card .pc-chips{margin:0 0 14pt;font-size:10pt;color:#555 !important}
+  #print-card .pc-key{margin:0 0 3pt;font-size:13pt;font-weight:600}
+  #print-card .pc-grind{margin:0 0 16pt;font-size:11pt;color:#444 !important}
+  #print-card h2{font-size:9.5pt;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+    margin:0 0 6pt;padding-bottom:3pt;border-bottom:.6pt solid #bbb}
+  #print-card table{width:100%;border-collapse:collapse;margin:0 0 16pt}
+  #print-card tr{break-inside:avoid;page-break-inside:avoid}
+  #print-card td{padding:5pt 0;border-bottom:.4pt solid #ddd;vertical-align:top}
+  #print-card td.t{width:52pt;font-variant-numeric:tabular-nums;color:#555 !important}
+  #print-card td.g{width:62pt;text-align:right;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+  #print-card td.n b{font-weight:600}
+  #print-card td.n span{display:block;color:#555 !important;font-size:10pt;margin-top:1pt}
+  #print-card tr.rest td{color:#666 !important}
+  #print-card .pc-why{font-family:var(--serif);font-size:12.5pt;line-height:1.4;margin:0 0 16pt}
+  #print-card .pc-fix{margin:0 0 6pt;font-size:10.5pt}
+  #print-card .pc-fix b{font-weight:600}
+  #print-card .pc-foot{margin:18pt 0 0;padding-top:6pt;border-top:.6pt solid #bbb;
+    font-size:8.5pt;color:#666 !important;display:flex;justify-content:space-between;gap:12pt}
+}
 </style>
 
 <script>try{var _t=localStorage.getItem('cc-tema');if(_t==='light'||_t==='dark')document.documentElement.setAttribute('data-theme',_t)}catch(e){}</script>
@@ -431,13 +459,20 @@ button{font:inherit;color:inherit}
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5V4m0 0L8.4 7.6M12 4l3.6 3.6"/><path d="M5.5 13v5.5a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V13"/></svg>
           <span class="lbl">Compartir</span>
         </button>
-        <button id="btn-brew" class="btn btn-primary">Empezar</button>
+        <button id="btn-pdf" class="btn btn-ghost" aria-label="Guardar la receta en PDF o imprimirla">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3.2H7.4a1.8 1.8 0 0 0-1.8 1.8v14a1.8 1.8 0 0 0 1.8 1.8h9.2a1.8 1.8 0 0 0 1.8-1.8V7.4z"/><path d="M13.8 3.4v4.2h4.4"/><path d="M9.2 13.4h5.6M9.2 16.6h3.4"/></svg>
+          <span class="lbl">PDF</span>
+        </button>
       </div>
+      <button id="btn-brew" class="btn btn-primary btn-block">Empezar</button>
       <p id="share-msg" class="share-msg" hidden></p>
       <textarea id="share-txt" class="share-txt" readonly hidden aria-label="Texto de la receta para copiar"></textarea>
     </section>
   </main>
 </div>
+
+<!-- ficha para imprimir o guardar en PDF; sólo existe al imprimir -->
+<article id="print-card" aria-hidden="true"></article>
 
 <!-- ============ PASO 3 · pantalla de vertido ============ -->
 <section id="p-brew" class="brew" hidden aria-label="Filtrado en curso">
@@ -983,6 +1018,50 @@ async function abreCompartida(){
   }
 }
 
+/* ---------------- ficha imprimible ---------------- */
+function pintaFicha(){
+  var r=S.recipe,L=r.lectura||{},h='';
+  h+='<h1>'+esc(L.nombre||'Receta de filtrado')+'</h1>';
+  h+='<p class="pc-sub">'+esc([L.tostador,r.metodo].filter(Boolean).join(' · '))+'</p>';
+  var ch=[L.origen,L.region,L.variedad,L.proceso,L.tueste,L.altura,L.fechaTueste].filter(Boolean);
+  if(ch.length)h+='<p class="pc-chips">'+esc(ch.join(' · '))+'</p>';
+  else h+='<p class="pc-chips"></p>';
+  h+='<p class="pc-key">'+r.dosis+' g de café · '+r.agua+' g de agua · 1:'+
+     (r.agua/r.dosis).toFixed(1)+' · '+r.temperatura+' °C</p>';
+  h+='<p class="pc-grind">Molienda '+esc(r.molienda.descripcion.toLowerCase())+
+     (r.molienda.referencia?' — '+esc(r.molienda.referencia):'')+
+     (r.molienda.micras?' · '+esc(r.molienda.micras):'')+'</p>';
+
+  h+='<h2>Vertidos</h2><table><tbody>';
+  segmentos(r).forEach(function(sg){
+    if(sg.kind==='pour'){
+      h+='<tr><td class="t">'+fmt(sg.t0)+'</td><td class="n"><b>'+esc(sg.label)+'</b>'+
+         (sg.nota?'<span>'+esc(sg.nota)+'</span>':'')+'</td>'+
+         '<td class="g">'+Math.round(sg.to)+' g</td></tr>';
+    }else{
+      h+='<tr class="rest"><td class="t">'+fmt(sg.t0)+'</td><td class="n">'+esc(sg.label)+
+         '</td><td class="g">'+Math.round(sg.t1-sg.t0)+' s</td></tr>';
+    }
+  });
+  h+='<tr><td class="t">'+fmt(r.tiempoTotal)+'</td><td class="n"><b>Listo</b></td><td class="g"></td></tr>';
+  h+='</tbody></table>';
+
+  if(r.porQue)h+='<p class="pc-why">'+esc(r.porQue)+'</p>';
+  h+='<h2>Si no sale bien</h2>';
+  h+='<p class="pc-fix"><b>Amargo o seco.</b> '+esc(r.ajustes.amargo)+'</p>';
+  h+='<p class="pc-fix"><b>Ácido o aguado.</b> '+esc(r.ajustes.acido)+'</p>';
+  h+='<p class="pc-foot"><span>Cono y Cronómetro</span><span>'+
+     esc(new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'}))+'</span></p>';
+  $('#print-card').innerHTML=h;
+}
+function guardaPDF(){
+  pintaFicha();
+  // el diálogo del navegador es el que ofrece «Guardar como PDF»; así la
+  // ficha sale con la tipografía real y el texto sigue siendo texto
+  try{window.print()}
+  catch(e){msgShare('Tu navegador no dejó abrir el diálogo de impresión.',false)}
+}
+
 /* ---------------- tema ---------------- */
 var TEMAS=['auto','light','dark'];
 var TEMA_TXT={auto:'Tema automático',light:'Tema claro',dark:'Tema oscuro'};
@@ -1238,6 +1317,7 @@ $('#saved-list').addEventListener('click',function(e){
 });
 $('#back-foto').addEventListener('click',function(){paso(1)});
 $('#btn-share').addEventListener('click',comparte);
+$('#btn-pdf').addEventListener('click',guardaPDF);
 $('#btn-brew').addEventListener('click',function(){construyeBrew();paso(3)});
 $('#dose-menos').addEventListener('click',function(){cambiaDosis(-1)});
 $('#dose-mas').addEventListener('click',function(){cambiaDosis(1)});
