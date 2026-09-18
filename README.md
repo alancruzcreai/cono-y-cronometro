@@ -24,6 +24,29 @@ Una página, sin dependencias ni build. Abre `index.html` y ya.
   se te va más de 30 s por encima de lo previsto, mueles demasiado fino.
 - **Cinco recetas de referencia**: una taza (V60), Hoffmann, 4:6 de Tetsu
   Kasuya, Kalita Wave y Chemex, cada una con su porqué y sus correcciones.
+- **Compartir**: manda la receta como texto legible más un enlace que la
+  reconstruye entera en el cronómetro del que lo recibe.
+
+## Compartir
+
+El botón de la pantalla de receta arma un texto legible por sí solo —dosis,
+agua, ratio, temperatura, molienda y la tabla de vertidos con sus tiempos— y le
+pega al final un enlace que **reconstruye esa receta exacta** en el cronómetro
+de quien lo abra.
+
+La receta va comprimida dentro del `#hash`, así que el enlace no depende de
+ningún servidor: no hay base de datos, ni identificadores, ni nada que caduque.
+Una receta de cinco vertidos con su explicación cabe en unos 760 caracteres.
+
+```
+receta → objeto compacto → JSON → deflate-raw → base64url → #r=…
+```
+
+`deflate-raw` sale de `CompressionStream`, que es nativo; donde no exista, el
+JSON viaja sin comprimir y el enlace solo queda más largo. Se comparte con
+`navigator.share` y, si el navegador no lo trae, cae al portapapeles y, si
+tampoco, a un cuadro de texto ya seleccionado. El botón nunca se queda sin
+hacer nada.
 
 ## Temas
 

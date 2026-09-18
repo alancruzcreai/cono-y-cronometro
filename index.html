@@ -208,6 +208,15 @@ button{font:inherit;color:inherit}
 .plan li.rest .g{color:var(--ink-3);font-weight:400}
 .evid{font-size:13.5px;color:var(--ink-3);margin-bottom:22px}
 .evid b{font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;font-weight:600}
+.acciones{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:stretch}
+.acciones .btn{display:flex;align-items:center;justify-content:center;gap:8px;padding-block:16px;font-size:17px}
+.acciones svg{width:19px;height:19px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+/* en pantallas muy angostas el secundario se queda en icono para que el
+   primario nunca sea el más estrecho de los dos */
+@media (max-width:380px){.acciones .lbl{display:none}}
+.share-msg{margin:10px 0 0;font-size:14px;color:var(--ok);text-align:center}
+.share-txt{width:100%;margin-top:10px;min-height:150px;padding:12px;border:1px solid var(--line-2);
+  border-radius:12px;background:var(--surface);color:var(--ink);font:inherit;font-size:14px;resize:vertical}
 
 /* ================= paso 3 · pantalla de vertido ================= */
 /* Superficie de foco a pantalla completa. Sigue el tema como el resto. */
@@ -417,7 +426,15 @@ button{font:inherit;color:inherit}
       <p class="why" id="why"></p>
       <ol class="plan" id="plan"></ol>
       <div class="evid" id="evid" hidden></div>
-      <button id="btn-brew" class="btn btn-primary btn-block">Empezar</button>
+      <div class="acciones">
+        <button id="btn-share" class="btn btn-ghost" aria-label="Compartir esta receta">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5V4m0 0L8.4 7.6M12 4l3.6 3.6"/><path d="M5.5 13v5.5a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V13"/></svg>
+          <span class="lbl">Compartir</span>
+        </button>
+        <button id="btn-brew" class="btn btn-primary">Empezar</button>
+      </div>
+      <p id="share-msg" class="share-msg" hidden></p>
+      <textarea id="share-txt" class="share-txt" readonly hidden aria-label="Texto de la receta para copiar"></textarea>
     </section>
   </main>
 </div>
@@ -552,7 +569,7 @@ var S={sample:null,db:null,imgLimits:null,photos:[],base:null,recipe:null,segs:[
 /* ---------------- normalizar receta ---------------- */
 function normaliza(r){
   var o={};
-  o.clasica=!!r.clasica;
+  o.clasica=!!r.clasica;o.compartida=!!r.compartida;
   o.lectura=r.lectura&&typeof r.lectura==='object'?r.lectura:{};
   if(!Array.isArray(o.lectura.notas))o.lectura.notas=o.lectura.notas?[String(o.lectura.notas)]:[];
   o.metodo=r.metodo?String(r.metodo):'Cono de filtrado';
@@ -653,6 +670,7 @@ function pintaReceta(){
   var head='';
   if(L.tostador)head+='<p class="roaster">'+esc(L.tostador)+'</p>';
   else if(r.clasica)head+='<p class="roaster">Receta de referencia · '+esc(r.metodo)+'</p>';
+  else if(r.compartida)head+='<p class="roaster">Receta compartida · '+esc(r.metodo)+'</p>';
   else head+='<p class="roaster">Leído de tu foto</p>';
   head+='<h1 class="cname">'+esc(L.nombre||'Tu café')+'</h1>';
   var chips=[];
@@ -841,6 +859,127 @@ function dibuja(){
       else if(k===n+1){beep(587,.10,.16);setTimeout(function(){beep(784,.10,.16)},150);setTimeout(function(){beep(1046,.12,.28)},300)}
     }
     S.lastPhase=key;
+  }
+}
+
+/* ---------------- compartir ---------------- */
+var APP_URL='https://alancruzcreai.github.io/cono-y-cronometro/';
+function baseUrl(){
+  // desde un host público usamos el suyo; desde el visor o un archivo local,
+  // el enlace tiene que apuntar a donde el destinatario sí pueda abrirlo
+  if(/^https?:$/.test(location.protocol)&&!/claude\.ai$/.test(location.hostname))
+    return location.href.split('#')[0].split('?')[0];
+  return APP_URL;
+}
+function b64u(bytes){
+  var s='';for(var i=0;i<bytes.length;i++)s+=String.fromCharCode(bytes[i]);
+  return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function unb64u(str){
+  str=str.replace(/-/g,'+').replace(/_/g,'/');
+  while(str.length%4)str+='=';
+  var bin=atob(str),out=new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);
+  return out;
+}
+function compacta(r){
+  var L=r.lectura||{};
+  return {n:L.nombre||'',ro:L.tostador||'',
+    ch:[L.origen,L.region,L.variedad,L.proceso,L.tueste].map(function(x){return x||''}),
+    m:r.metodo,d:r.dosis,a:r.agua,t:r.temperatura,
+    g:[r.molienda.descripcion,r.molienda.referencia,r.molienda.micras],
+    T:r.tiempoTotal,
+    v:r.vertidos.map(function(p){return [p.inicio,p.duracion,p.hasta,p.tipo,p.nombre,p.nota]}),
+    q:r.porQue,j:[r.ajustes.amargo,r.ajustes.acido]};
+}
+function expande(c){
+  var ch=c.ch||[],g=c.g||[],j=c.j||[];
+  return {compartida:true,
+    lectura:{nombre:c.n||null,tostador:c.ro||null,origen:ch[0]||null,region:ch[1]||null,
+             variedad:ch[2]||null,proceso:ch[3]||null,tueste:ch[4]||null,
+             altura:null,fechaTueste:null,notas:[],confianza:0,evidencia:''},
+    metodo:c.m,dosis:c.d,agua:c.a,temperatura:c.t,
+    molienda:{descripcion:g[0]||'Media',referencia:g[1]||'',micras:g[2]||''},
+    tiempoTotal:c.T,
+    vertidos:(c.v||[]).map(function(p){
+      return {inicio:p[0],duracion:p[1],hasta:p[2],tipo:p[3],nombre:p[4],nota:p[5]}}),
+    porQue:c.q||'',ajustes:{amargo:j[0]||'',acido:j[1]||''}};
+}
+async function empaca(obj){
+  var bytes=new TextEncoder().encode(JSON.stringify(obj));
+  if(typeof CompressionStream==='function'){
+    try{
+      var cs=new CompressionStream('deflate-raw'),w=cs.writable.getWriter();
+      w.write(bytes);w.close();
+      return 'z'+b64u(new Uint8Array(await new Response(cs.readable).arrayBuffer()));
+    }catch(e){}
+  }
+  return 'j'+b64u(bytes);
+}
+async function desempaca(str){
+  var tag=str.charAt(0),bytes=unb64u(str.slice(1));
+  if(tag==='z'){
+    var ds=new DecompressionStream('deflate-raw'),w=ds.writable.getWriter();
+    w.write(bytes);w.close();
+    bytes=new Uint8Array(await new Response(ds.readable).arrayBuffer());
+  }
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+function textoReceta(r,url){
+  var L=r.lectura||{},l=[];
+  l.push((L.nombre||'Receta de filtrado')+(L.tostador?' — '+L.tostador:''));
+  l.push(r.metodo);
+  l.push('');
+  l.push(r.dosis+' g de café · '+r.agua+' g de agua · 1:'+(r.agua/r.dosis).toFixed(1)+' · '+r.temperatura+' °C');
+  l.push('Molienda '+r.molienda.descripcion.toLowerCase()+
+    (r.molienda.referencia?' ('+r.molienda.referencia+')':''));
+  l.push('');
+  r.vertidos.forEach(function(p){
+    l.push(fmt(p.inicio)+'  '+(p.nombre||'Vertido')+' — hasta '+Math.round(p.hasta)+' g');
+  });
+  l.push(fmt(r.tiempoTotal)+'  listo');
+  if(r.porQue){l.push('');l.push(r.porQue)}
+  l.push('');l.push(url);
+  return l.join('\n');
+}
+function msgShare(t,ok){
+  var e=$('#share-msg');
+  e.textContent=t;e.style.color=ok?'var(--ok)':'var(--ink-3)';e.hidden=false;
+  clearTimeout(msgShare._t);msgShare._t=setTimeout(function(){e.hidden=true},4000);
+}
+async function comparte(){
+  var r=S.recipe,b=$('#btn-share');
+  b.disabled=true;
+  try{
+    var url=baseUrl()+'#r='+await empaca(compacta(r));
+    var txt=textoReceta(r,url);
+    var titulo=((r.lectura&&r.lectura.nombre)||'Receta')+' · '+r.metodo;
+    if(navigator.share){
+      try{await navigator.share({title:titulo,text:txt});return}
+      catch(e){if(e&&e.name==='AbortError')return}
+    }
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      try{await navigator.clipboard.writeText(txt);msgShare('Receta copiada. Ya puedes pegarla.',true);return}
+      catch(e){}
+    }
+    var ta=$('#share-txt');
+    ta.value=txt;ta.hidden=false;ta.focus();ta.select();
+    msgShare('Copia el texto de abajo.',false);
+  }catch(e){
+    msgShare('No se pudo preparar la receta para compartir.',false);
+  }finally{b.disabled=false}
+}
+async function abreCompartida(){
+  var h=location.hash||'';
+  if(h.indexOf('#r=')!==0)return false;
+  try{
+    S.base=normaliza(expande(await desempaca(h.slice(3))));
+    S.recipe=S.base;S.bolsaId=null;S.tazasPrev=[];
+    pintaReceta();paso(2);
+    return true;
+  }catch(e){
+    msgShare('Ese enlace de receta no se pudo leer.',false);
+    return false;
   }
 }
 
@@ -1098,6 +1237,7 @@ $('#saved-list').addEventListener('click',function(e){
   var b=e.target.closest('button[data-i]');if(b)abreBolsa(+b.dataset.i);
 });
 $('#back-foto').addEventListener('click',function(){paso(1)});
+$('#btn-share').addEventListener('click',comparte);
 $('#btn-brew').addEventListener('click',function(){construyeBrew();paso(3)});
 $('#dose-menos').addEventListener('click',function(){cambiaDosis(-1)});
 $('#dose-mas').addEventListener('click',function(){cambiaDosis(1)});
@@ -1148,6 +1288,7 @@ try{temaGuardado=localStorage.getItem('cc-tema')||'auto'}catch(e){}
 aplicaTema(temaGuardado,false);
 S.base=normaliza(EJEMPLO);S.recipe=S.base;
 pintaPresets();pintaReceta();construyeBrew();paso(1);
+abreCompartida();
 if(!window.matchMedia||!window.matchMedia('(pointer: coarse)').matches){
   $('#cam-label').textContent='Subir foto de la bolsa';
 }
